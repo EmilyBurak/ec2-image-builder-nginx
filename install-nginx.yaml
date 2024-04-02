@@ -1,0 +1,25 @@
+name: InstallNginxDocument
+description: Installs nginx
+schemaVersion: 1.0
+
+phases:
+  - name: build
+    steps:
+      - name: InstallNginxStep
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+             #!/bin/bash
+             # Update system packages
+             yum update -y
+             # Install nginx
+             yum install -y nginx
+             # Configure nginx to listen on port 80
+             sed -i 's/listen       80;/listen       80 default_server;/g' /etc/nginx/nginx.conf
+             # Enable logging and log the request body
+             sed -i 's/# access_log/access_log\n    log_format  main  '"'\$remote_addr - \$remote_user [\$time_local] \"\$request\" \$status \$body_bytes_sent \"\$http_referer\" \"\$http_user_agent\" \"\$request_body\"'"';\n    access_log  /var/log/nginx/access.log  main;\n    echo_request_body on;/g' /etc/nginx/nginx.conf
+             # Start nginx service
+             systemctl start nginx
+             # Enable nginx service to start on boot
+             systemctl enable nginx

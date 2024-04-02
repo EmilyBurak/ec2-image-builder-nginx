@@ -1,0 +1,18 @@
+name: InvokeHTTPLambdaDocument
+description: Invoke the HTTP Lambda to test nginx
+schemaVersion: 1.0
+
+phases:
+  - name: test
+    steps:
+      - name: InvokeHTTPLambda
+        action: ExecuteBash
+        inputs:
+          commands: 
+            - |
+                ip="$(curl https://checkip.amazonaws.com)"
+                echo "My public IP address is: $ip"
+                pl="$(jq -n --arg ip "$ip" '{server_ip: $ip}')"
+                echo "Payload: $pl"
+                curl -d "$pl" <REPLACE_WITH_YOUR_PUBLIC_LAMBDA_ENDPOINT>
+                sudo grep -i "lambdatest" /var/log/nginx/access.log 
