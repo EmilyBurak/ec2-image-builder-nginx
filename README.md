@@ -20,7 +20,7 @@ Please refer to the individual script/configuration files for more details. Hope
 
 You'll need:
 
-- A Lambda off of `server-call-lambda.py` with a function URL that you'll substitute into the code of `invoke-http-lambda.yaml` when you use it with CORS setup to receive GET requests.
+- A Lambda with the code contained in `server-call-lambda.py` with a function URL that you'll substitute into the code of `invoke-http-lambda.yaml` when you use it, with CORS setup to receive POST requests.
 - An EC2 Image Builder Pipeline including:
   - The Build component of `install-nginx.yaml` that installs nginx and configures it.
   - The Test component for the pipeline to invoke the Lambda contained in `invoke-http-lambda.yaml`.
