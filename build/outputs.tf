@@ -1,7 +1,18 @@
 
 output "http_lambda_arn" {
-  value       = aws_lambda_function.http_function.arn
+  value       = module.aws_http_lambda.http_lambda_arn
   description = "value of the lambda function arn"
+}
+
+output "http_lambda_function_url" {
+  value       = module.aws_http_lambda.http_lambda_function_url
+  description = "value of the lambda function url"
+}
+
+output "logs_bucket_arn" {
+  value       = module.aws_logs_s3.logs_bucket_arn
+  description = "value of the s3 logs bucket arn"
+
 }
 
 output "nginx_pipeline_id" {
