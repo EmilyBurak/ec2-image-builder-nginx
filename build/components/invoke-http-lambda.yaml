@@ -14,5 +14,5 @@ phases:
                 echo "My public IP address is: $ip"
                 pl="$(jq -n --arg ip "$ip" '{server_ip: $ip}')"
                 echo "Payload: $pl"
-                curl -d "$pl" <REPLACE WITH YOUR PUBLIC LAMBDA URL>
+                curl -d "$pl" ${function_invoke_url}
                 sudo grep -i "lambdatest" /var/log/nginx/access.log 

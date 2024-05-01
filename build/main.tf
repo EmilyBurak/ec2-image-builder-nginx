@@ -58,7 +58,7 @@ resource "aws_imagebuilder_component" "install_nginx" {
 
 # TEST COMPONENT
 resource "aws_imagebuilder_component" "invoke_http" {
-  data     = templatefile("${path.module}/components/invoke-http-lambda.yaml", {})
+  data     = templatefile("${path.module}/components/invoke-http-lambda.yaml", { function_invoke_url = module.aws_http_lambda.http_lambda_function_url })
   name     = "invoke_http_lambda_component"
   platform = "Linux"
   version  = "1.0.0"
