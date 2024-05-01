@@ -15,9 +15,14 @@ output "logs_bucket_arn" {
 
 }
 
-output "nginx_pipeline_id" {
-  value       = aws_imagebuilder_image_pipeline.nginx-http.id
-  description = "value of the image pipeline id"
+output "nginx_pipeline_arn" {
+  value       = aws_imagebuilder_image_pipeline.nginx-http.arn
+  description = "value of the image pipeline arn"
+}
+
+output "nginx_recipe_name" {
+  value       = aws_imagebuilder_image_recipe.nginx-http.name
+  description = "value of the image recipe name"
 }
 
 output "public_subnet_id" {

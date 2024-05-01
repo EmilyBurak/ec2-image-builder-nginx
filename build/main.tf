@@ -73,6 +73,7 @@ resource "aws_imagebuilder_infrastructure_configuration" "nginx-http" {
   security_group_ids            = [module.aws_public_networking.security_group_id]
   subnet_id                     = module.aws_public_networking.public_subnet_id
   terminate_instance_on_failure = true
+  sns_topic_arn                 = aws_sns_topic.image-builder-result.arn
 
   logging {
     s3_logs {
@@ -128,4 +129,28 @@ resource "aws_iam_role" "nginx_http_role" {
 resource "aws_iam_instance_profile" "nginx_http_profile" {
   name = "nginx_http_profile"
   role = aws_iam_role.nginx_http_role.name
+}
+
+
+resource "aws_sns_topic" "image-builder-result" {
+  name = "nginx-http-image-builder-result"
+}
+
+resource "aws_sns_topic_policy" "default" {
+  arn    = aws_sns_topic.image-builder-result.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
+}
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["SNS:Publish"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    resources = [aws_sns_topic.image-builder-result.arn]
+  }
 }
