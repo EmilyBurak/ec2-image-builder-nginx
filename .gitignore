@@ -3,3 +3,5 @@
 **/.terraform/*
 **/.terraform.lock.hcl
 http_lambda.zip
+tfplan
+output.json
