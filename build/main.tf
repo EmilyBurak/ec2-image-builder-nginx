@@ -46,6 +46,10 @@ resource "aws_imagebuilder_image_pipeline" "nginx-http" {
 
 }
 
+data "aws_ssm_parameter" "amzn2023_ami" {
+  name = "/aws/service/ami-amazon-linux-latest/amzn2023-ami-hvm-x86_64-gp2"
+}
+
 # IMAGE RECIPE
 resource "aws_imagebuilder_image_recipe" "nginx-http" {
   block_device_mapping {
@@ -68,7 +72,8 @@ resource "aws_imagebuilder_image_recipe" "nginx-http" {
   }
   name = "nginx-http-tests"
   # Currently hardcoded to Amazon Linux 2023
-  parent_image = "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2023-x86/x.x.x"
+  # parent_image = "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2023-x86/x.x.x"
+  parent_image = data.aws_ssm_parameter.amzn2023_ami.arn
   version      = "1.0.0"
 }
 
@@ -202,3 +207,4 @@ data "aws_iam_policy_document" "sns_topic_policy" {
     resources = [aws_sns_topic.image-builder-result.arn]
   }
 }
+
