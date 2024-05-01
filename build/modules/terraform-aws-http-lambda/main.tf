@@ -1,9 +1,9 @@
 
 # LAMBDA FUNCTION FOR HTTP REQUESTS
 
-resource "aws_lambda_function" "http_function" {
+resource "aws_lambda_function" "http-function" {
   filename         = "${path.root}/python/http_lambda.zip"
-  function_name    = "http_lambda_function"
+  function_name    = "http-lambda-function"
   role             = aws_iam_role.http_lambda.arn
   runtime          = "python3.10"
   depends_on       = [aws_iam_role_policy_attachment.lambda_basic_role_attach]
@@ -20,8 +20,8 @@ data "klayers_package_latest_version" "requests" {
 }
 
 # Sets up endpoint for the lambda function to be accessed in testing 
-resource "aws_lambda_function_url" "http_function_url" {
-  function_name      = aws_lambda_function.http_function.function_name
+resource "aws_lambda_function_url" "http-function-url" {
+  function_name      = aws_lambda_function.http-function.function_name
   authorization_type = "NONE"
 
   cors {

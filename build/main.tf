@@ -46,8 +46,9 @@ resource "aws_imagebuilder_image_pipeline" "nginx-http" {
 
 }
 
-data "aws_ssm_parameter" "amzn2023_ami" {
-  name = "/aws/service/ami-amazon-linux-latest/amzn2023-ami-hvm-x86_64-gp2"
+# Most recent Amazon Linux 2 AMI
+data "aws_ssm_parameter" "amzn2023-ami" {
+  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
 }
 
 # IMAGE RECIPE
@@ -64,21 +65,21 @@ resource "aws_imagebuilder_image_recipe" "nginx-http" {
 
   component {
     # build component
-    component_arn = aws_imagebuilder_component.install_nginx.arn
+    component_arn = aws_imagebuilder_component.install-nginx.arn
   }
   component {
     # test component
-    component_arn = aws_imagebuilder_component.invoke_http.arn
+    component_arn = aws_imagebuilder_component.invoke-http.arn
   }
   name = "nginx-http-tests"
   # Currently hardcoded to Amazon Linux 2023
   # parent_image = "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2023-x86/x.x.x"
-  parent_image = data.aws_ssm_parameter.amzn2023_ami.arn
+  parent_image = data.aws_ssm_parameter.amzn2023-ami.value
   version      = "1.0.0"
 }
 
 # BUILD COMPONENT
-resource "aws_imagebuilder_component" "install_nginx" {
+resource "aws_imagebuilder_component" "install-nginx" {
   data     = templatefile("${path.module}/components/install-nginx.yaml", {})
   name     = "install_nginx_http_component"
   platform = "Linux"
@@ -86,7 +87,7 @@ resource "aws_imagebuilder_component" "install_nginx" {
 }
 
 # TEST COMPONENT
-resource "aws_imagebuilder_component" "invoke_http" {
+resource "aws_imagebuilder_component" "invoke-http" {
   data     = templatefile("${path.module}/components/invoke-http-lambda.yaml", { function_invoke_url = module.aws_http_lambda.http_lambda_function_url })
   name     = "invoke_http_lambda_component"
   platform = "Linux"
@@ -95,7 +96,7 @@ resource "aws_imagebuilder_component" "invoke_http" {
 
 resource "aws_imagebuilder_infrastructure_configuration" "nginx-http" {
   description                   = "nginx http server"
-  instance_profile_name         = aws_iam_instance_profile.nginx_http_profile.name
+  instance_profile_name         = aws_iam_instance_profile.nginx-http-profile.name
   instance_types                = ["t3.micro"]
   key_pair                      = var.key_pair_name
   name                          = "nginx-http"
@@ -113,8 +114,8 @@ resource "aws_imagebuilder_infrastructure_configuration" "nginx-http" {
 }
 
 # IAM ROLE FOR IMAGE BUILDER
-resource "aws_iam_role" "nginx_http_role" {
-  name                = "nginx_http_role"
+resource "aws_iam_role" "nginx-http-role" {
+  name                = "nginx-http-role"
   managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore", "arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder", "arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilderECRContainerBuilds"]
 
   assume_role_policy = jsonencode({
@@ -151,13 +152,13 @@ resource "aws_iam_role" "nginx_http_role" {
   }
 
   tags = {
-    Name = "nginx_http_role"
+    Name = "nginx-http-role"
   }
 }
 
-resource "aws_iam_instance_profile" "nginx_http_profile" {
-  name = "nginx_http_profile"
-  role = aws_iam_role.nginx_http_role.name
+resource "aws_iam_instance_profile" "nginx-http-profile" {
+  name = "nginx-http-profile"
+  role = aws_iam_role.nginx-http-role.name
 }
 
 # trying to figure out the syntax and if this is even supported by AWS
@@ -191,10 +192,10 @@ resource "aws_sns_topic" "image-builder-result" {
 
 resource "aws_sns_topic_policy" "default" {
   arn    = aws_sns_topic.image-builder-result.arn
-  policy = data.aws_iam_policy_document.sns_topic_policy.json
+  policy = data.aws_iam_policy_document.sns-topic-policy.json
 }
 
-data "aws_iam_policy_document" "sns_topic_policy" {
+data "aws_iam_policy_document" "sns-topic-policy" {
   statement {
     effect  = "Allow"
     actions = ["SNS:Publish"]
