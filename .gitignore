@@ -5,3 +5,5 @@
 http_lambda.zip
 tfplan
 output.json
+todo.md
+entrypoint.sh
