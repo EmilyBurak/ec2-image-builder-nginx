@@ -16,9 +16,9 @@ The `invoke-http-lambda.yaml` component is a Test stage component in bash that i
 
 Please refer to the individual script/configuration files for more details. Hopefully they're demonstrative and 'self-documenting' where I haven't left comments.
 
-## .tf files
+## Terraform modules
 
-These are Terraform configuration files that set up the infrastructure needed to run the pipeline, including the pipeline and its components.
+These are Terraform configuration files that set up the infrastructure needed to run the pipeline, including the pipeline and its components. The root module in `/build/` is responsible for EC2 Image Builder-specific resources, the `terraform-aws-http-lambda` module handles the `server-call-lambda.py` and attendant infrastructure and configuration, `terraform-aws-logs-s3` sets up a logging bucket for Image Builder and `terraform-aws-public-networking` provisions a VPC with a public subnet accessible by the Lambda for the EC2 Image Builder AMI during testing.
 
 # Setup
 
@@ -29,16 +29,14 @@ You'll need:
 
 # To Use
 
-- Run the usual Terraform workflow to create the resources
-- Run the Image Builder pipeline to see if it works!
-  - It won't work until you modify the `invoke-http-lambda.yaml` with the function URL. I'll add a `yamlencode` to fix this at some point.
+- Run the usual Terraform workflow from `/build/` to create the resources
+- Go into AWS and run the Image Builder pipeline to see if it works!
 
 # Future Work
 
 - The code for the lambda itself is clunky, needing a regex to request the right address using a public function url is ugly. Gotta be a better way.
   - I'd rather call it with the AWS CLI and set up authentication properly.
 - Better error handling in the bash and better validation of the received nginx request from the lambda, generally make the output more verbose and demonstrative of what is happening in the Test component.
-- Modularize that TF.
 
 # Resources
 
