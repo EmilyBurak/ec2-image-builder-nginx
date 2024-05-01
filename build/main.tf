@@ -1,9 +1,21 @@
 # Image Builder for Nginx HTTP Server
 
 
-module "aws_public_networking" {
-  source            = "./modules/terraform-aws-public-networking"
-  availability_zone = var.availability_zone
+# module "aws_public_networking" {
+#   source            = "./modules/terraform-aws-public-networking"
+#   availability_zone = var.availability_zone
+#   vpc_id            = module.vpc.vpc_id
+# }
+
+module "aws_http_sg" {
+  source = "terraform-aws-modules/security-group/aws//modules/http-80"
+
+  name        = "nginx-http-sg"
+  description = "Security group for nginx EC2 Image Builder testing with HTTP ports open within VPC"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+
 }
 
 module "aws_http_lambda" {
@@ -15,11 +27,23 @@ module "aws_logs_s3" {
   logs_bucket_name = var.logs_bucket_name
 }
 
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+
+  name = "nginx-http-vpc"
+  cidr = "10.0.0.0/16"
+
+  azs                     = [var.availability_zone]
+  public_subnets          = ["10.0.1.0/24"]
+  map_public_ip_on_launch = true
+}
+
 # IMAGE PIPELINE
 resource "aws_imagebuilder_image_pipeline" "nginx-http" {
   image_recipe_arn                 = aws_imagebuilder_image_recipe.nginx-http.arn
   infrastructure_configuration_arn = aws_imagebuilder_infrastructure_configuration.nginx-http.arn
   name                             = "nginx-http"
+
 }
 
 # IMAGE RECIPE
@@ -70,8 +94,8 @@ resource "aws_imagebuilder_infrastructure_configuration" "nginx-http" {
   instance_types                = ["t3.micro"]
   key_pair                      = var.key_pair_name
   name                          = "nginx-http"
-  security_group_ids            = [module.aws_public_networking.security_group_id]
-  subnet_id                     = module.aws_public_networking.public_subnet_id
+  security_group_ids            = [module.aws_http_sg.security_group_id]
+  subnet_id                     = module.vpc.public_subnets[0]
   terminate_instance_on_failure = true
   sns_topic_arn                 = aws_sns_topic.image-builder-result.arn
 
@@ -131,6 +155,30 @@ resource "aws_iam_instance_profile" "nginx_http_profile" {
   role = aws_iam_role.nginx_http_role.name
 }
 
+# trying to figure out the syntax and if this is even supported by AWS
+# resource "aws_cloudwatch_event_rule" "nginx-http-build" {
+#   name        = "nginx-http-build"
+#   description = "Capture nginx http image builder events"
+
+#   # TODO: Add specific cluster targeting
+#   event_pattern = jsonencode({
+#     source = ["aws.imagebuilder"]
+#     detail-type = [
+#       "EC2 Image Builder Image Pipeline State Change"
+#     ]
+#     detail = {
+#       # name           = ["nginx-http"]
+#       pipelineState = ["ENABLED", "STARTED", "SUCCEEDED", "FAILED"]
+#     }
+
+#   })
+# }
+
+# resource "aws_cloudwatch_event_target" "sns" {
+#   rule      = aws_cloudwatch_event_rule.nginx-http-build.name
+#   target_id = "SendToSNS"
+#   arn       = aws_sns_topic.image-builder-result.arn
+# }
 
 resource "aws_sns_topic" "image-builder-result" {
   name = "nginx-http-image-builder-result"

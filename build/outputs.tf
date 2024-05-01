@@ -26,11 +26,11 @@ output "nginx_recipe_name" {
 }
 
 output "public_subnet_id" {
-  value       = module.aws_public_networking.public_subnet_id
+  value       = module.vpc.public_subnets[0]
   description = "value of the public subnet id"
 }
 
 output "security_group_id" {
-  value       = module.aws_public_networking.security_group_id
+  value       = module.aws_http_sg.security_group_id
   description = "value of the security group id"
 }
