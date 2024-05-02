@@ -7,3 +7,4 @@ tfplan
 output.json
 todo.md
 entrypoint.sh
+config.aws.tfbackend
