@@ -1,12 +1,5 @@
 # Image Builder for Nginx HTTP Server
 
-
-# module "aws_public_networking" {
-#   source            = "./modules/terraform-aws-public-networking"
-#   availability_zone = var.availability_zone
-#   vpc_id            = module.vpc.vpc_id
-# }
-
 module "aws_http_sg" {
   source = "terraform-aws-modules/security-group/aws//modules/http-80"
 
@@ -46,7 +39,7 @@ resource "aws_imagebuilder_image_pipeline" "nginx-http" {
 
 }
 
-# Most recent Amazon Linux 2 AMI
+# Most recent Amazon Linux 2023 AMI
 data "aws_ssm_parameter" "amzn2023-ami" {
   name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
 }
@@ -71,9 +64,7 @@ resource "aws_imagebuilder_image_recipe" "nginx-http" {
     # test component
     component_arn = aws_imagebuilder_component.invoke-http.arn
   }
-  name = "nginx-http-tests"
-  # Currently hardcoded to Amazon Linux 2023
-  # parent_image = "arn:aws:imagebuilder:us-west-2:aws:image/amazon-linux-2023-x86/x.x.x"
+  name         = "nginx-http-tests"
   parent_image = data.aws_ssm_parameter.amzn2023-ami.value
   version      = "1.0.0"
 }
@@ -98,7 +89,6 @@ resource "aws_imagebuilder_infrastructure_configuration" "nginx-http" {
   description                   = "nginx http server"
   instance_profile_name         = aws_iam_instance_profile.nginx-http-profile.name
   instance_types                = ["t3.micro"]
-  key_pair                      = var.key_pair_name
   name                          = "nginx-http"
   security_group_ids            = [module.aws_http_sg.security_group_id]
   subnet_id                     = module.vpc.public_subnets[0]
@@ -160,31 +150,6 @@ resource "aws_iam_instance_profile" "nginx-http-profile" {
   name = "nginx-http-profile"
   role = aws_iam_role.nginx-http-role.name
 }
-
-# trying to figure out the syntax and if this is even supported by AWS
-# resource "aws_cloudwatch_event_rule" "nginx-http-build" {
-#   name        = "nginx-http-build"
-#   description = "Capture nginx http image builder events"
-
-#   # TODO: Add specific cluster targeting
-#   event_pattern = jsonencode({
-#     source = ["aws.imagebuilder"]
-#     detail-type = [
-#       "EC2 Image Builder Image Pipeline State Change"
-#     ]
-#     detail = {
-#       # name           = ["nginx-http"]
-#       pipelineState = ["ENABLED", "STARTED", "SUCCEEDED", "FAILED"]
-#     }
-
-#   })
-# }
-
-# resource "aws_cloudwatch_event_target" "sns" {
-#   rule      = aws_cloudwatch_event_rule.nginx-http-build.name
-#   target_id = "SendToSNS"
-#   arn       = aws_sns_topic.image-builder-result.arn
-# }
 
 resource "aws_sns_topic" "image-builder-result" {
   name = "nginx-http-image-builder-result"
