@@ -18,7 +18,7 @@ Please refer to the individual script/configuration files for more details. Hope
 
 ## Terraform modules
 
-These are Terraform configuration files that set up the infrastructure needed to run the pipeline, including the pipeline and its components. The root module in `/build/` is responsible for EC2 Image Builder-specific resources, the `terraform-aws-http-lambda` module handles the `server-call-lambda.py` and attendant infrastructure and configuration, `terraform-aws-logs-s3` sets up a logging bucket for Image Builder and `terraform-aws-public-networking` provisions a VPC with a public subnet accessible by the Lambda for the EC2 Image Builder AMI during testing.
+These are Terraform configuration files that set up the infrastructure needed to run the pipeline, including the pipeline and its components. The root module in `/build/` is responsible for EC2 Image Builder-specific resources, the `terraform-aws-http-lambda` module handles the `server-call-lambda.py` and attendant infrastructure and configuration, `terraform-aws-logs-s3` sets up a logging bucket for Image Builder while networking is handled through external modules.
 
 # Setup
 
